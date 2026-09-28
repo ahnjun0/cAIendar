@@ -8,7 +8,9 @@ export const DEFAULT_LLM = {
   apiKey: '',
 };
 
-export const MAX_TOKENS = 4096; // 일정 JSON 수십 건에 충분
+// 응답 길이 상한. 값이 없으면 OpenRouter 가 모델 최대치를 예약해 크레딧 검사(402)에 걸리므로 반드시 보낸다.
+// 추론형 모델은 이 한도를 reasoning 에 먼저 쓰므로 일정 JSON 몫이 남도록 넉넉히 잡는다.
+export const MAX_TOKENS = 8192;
 
 // OpenAI 호환 chat.completions 를 제공하는 공급자 프리셋. baseUrl 뒤에 /chat/completions 가 붙는다.
 export const LLM_PRESETS = {
@@ -139,10 +141,20 @@ async function chat({ settings, messages, fetchFn, jsonMode = true, timeoutMs = 
       const data = await res.json().catch(() => null);
       const choice = data?.choices?.[0];
       const content = choice?.message?.content;
+      const reasoning = choice?.message?.reasoning ?? choice?.message?.reasoning_content ?? '';
+      const truncated = choice?.finish_reason === 'length' || choice?.native_finish_reason === 'length';
+
+      // 추론형 모델은 생각하는 데 토큰을 먼저 쓴다. 한도에 걸리면 본문이 비어서 온다
+      if (truncated && typeof content !== 'string') {
+        throw new LLMError(
+          `모델이 추론(reasoning)에 응답 한도 ${MAX_TOKENS}토큰을 다 써서 일정을 내놓지 못했습니다. `
+          + '설정에서 추론형이 아닌 일반 모델로 바꾸거나(예: gemini-2.0-flash, qwen-plus), 한 번에 변환할 분량을 줄여 보세요.',
+          { raw: String(reasoning).slice(0, 500) });
+      }
       if (typeof content !== 'string') {
         throw new LLMError('AI 응답에 본문이 없습니다. 공급자나 모델 설정을 확인하세요.', { raw: JSON.stringify(data ?? {}).slice(0, 500) });
       }
-      if (choice.finish_reason === 'length') {
+      if (truncated) {
         throw new LLMError('AI 응답이 길이 제한에 걸려 잘렸습니다. 한 번에 변환할 일정 수나 첨부 문서를 줄여 보세요.', { raw: content });
       }
       return content;

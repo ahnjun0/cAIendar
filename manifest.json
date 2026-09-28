@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "cAIendar — 자연어 일정 등록",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "네이버 캘린더에 자연어로 일정을 등록합니다. AI가 만든 일정을 확인한 뒤 CalDAV로 등록하고, 되돌릴 수 있습니다.",
   "permissions": [
     "storage",

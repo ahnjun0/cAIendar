@@ -31,6 +31,9 @@
 - OpenRouter는 `max_tokens`가 없으면 모델 최대치를 예약해 크레딧 검사에서 402를 낸다 → 4096 고정
 - 일부 공급자·모델은 `response_format: json_object`를 거부한다 → 400이면 그것만 빼고 한 번 더
 - `finish_reason: "length"`면 JSON이 잘린 것이다 → 파싱 실패로 뭉개지 말고 그대로 알린다
+- **추론(reasoning) 모델은 `max_tokens`를 생각하는 데 먼저 쓴다.** 한도에 걸리면 `content: null` + `message.reasoning` 만 오고
+  `finish_reason: "length"` 가 된다 (실측: OpenRouter `deepseek/deepseek-v4.1-flash`). 본문 없음과 구분해 안내한다.
+  상한은 8192 — 값이 없으면 OpenRouter 가 모델 최대치를 예약해 402 를 내므로 무한정 키울 수는 없다
 
 ## 약관
 

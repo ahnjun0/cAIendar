@@ -49,7 +49,7 @@ test('convertToPlan: POSTs OpenAI-compatible chat.completions with json_object a
   assert.equal(c.init.headers.Authorization, 'Bearer sk-test');
   assert.equal(c.body.model, 'qwen-plus');
   assert.deepEqual(c.body.response_format, { type: 'json_object' });
-  assert.equal(c.body.max_tokens, 4096); // 없으면 OpenRouter가 402를 낸다
+  assert.equal(c.body.max_tokens, 8192); // 없으면 OpenRouter가 402를 낸다
   assert.equal(c.body.messages[0].role, 'system');
   assert.match(c.body.messages[0].content, /2026-09-22/);
   assert.equal(c.body.messages[1].role, 'user');
@@ -203,4 +203,31 @@ test('convertToPlan: 응답이 너무 오래 걸리면 시간 초과로 알린�
 test('convertToPlan: 응답이 잘렸으면(finish_reason=length) 그 사실을 알린다', async () => {
   const f = async () => new Response(JSON.stringify({ choices: [{ finish_reason: 'length', message: { content: '{"events":[' } }] }), { status: 200 });
   await assert.rejects(convertToPlan({ text: 'x', settings, today: 't', fetchFn: f }), /잘렸/);
+});
+
+test('convertToPlan: 추론형 모델이 reasoning 으로 토큰을 다 쓰면 그 사실과 대처를 알린다', async () => {
+  const f = async () => new Response(JSON.stringify({
+    model: 'deepseek/deepseek-v4.1-flash',
+    choices: [{ finish_reason: 'length', native_finish_reason: 'length',
+      message: { role: 'assistant', content: null, reasoning: 'We need to extract events from the document…' } }],
+  }), { status: 200 });
+  await assert.rejects(convertToPlan({ text: 'x', settings, today: 't', fetchFn: f }),
+    (e) => e instanceof LLMError && /추론/.test(e.message) && /모델/.test(e.message));
+});
+
+test('convertToPlan: 길이 제한으로 잘린 일반 응답은 줄이라고 안내한다', async () => {
+  const f = async () => new Response(JSON.stringify({
+    choices: [{ finish_reason: 'length', message: { content: '{"events":[' } }],
+  }), { status: 200 });
+  await assert.rejects(convertToPlan({ text: 'x', settings, today: 't', fetchFn: f }), /잘렸/);
+});
+
+test('convertToPlan: 본문도 reasoning 도 없으면 설정을 확인하라고 한다', async () => {
+  const f = async () => new Response(JSON.stringify({ choices: [{ message: { content: null } }] }), { status: 200 });
+  await assert.rejects(convertToPlan({ text: 'x', settings, today: 't', fetchFn: f }), /본문이 없습니다/);
+});
+
+test('MAX_TOKENS: 문서 첨부까지 감당할 만큼 넉넉하되 유한하다', async () => {
+  const { MAX_TOKENS } = await import('../src/lib/llm.js');
+  assert.ok(MAX_TOKENS >= 8192 && MAX_TOKENS <= 16384, String(MAX_TOKENS));
 });
