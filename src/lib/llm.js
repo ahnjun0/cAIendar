@@ -16,7 +16,7 @@ export const MAX_TOKENS = 8192;
 export const LLM_PRESETS = {
   gemini: { label: 'Google Gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.0-flash', note: 'AI Studio 키. 무료 티어 넉넉함' },
   alibaba: { label: 'Alibaba Qwen (DashScope, 국제)', baseUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus', note: '무료 쿼터 있음. 중국 리전 계정이면 직접 입력으로 dashscope.aliyuncs.com' },
-  openrouter: { label: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'qwen/qwen-2.5-72b-instruct', note: '여러 모델·무료 모델(:free). 키 크레딧 한도 확인' },
+  openrouter: { label: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'qwen/qwen3-235b-a22b-2507', note: '여러 모델 중 고를 수 있음. 추론(reasoning) 모델은 피하고, 키 크레딧 한도를 확인하세요' },
 };
 
 export class LLMError extends Error {
