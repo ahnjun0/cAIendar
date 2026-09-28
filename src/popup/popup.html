@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>cAIendar</title>
+<link rel="stylesheet" href="../common.css">
+<style>
+  body { width: 680px; padding: 12px 14px 14px; }
+  header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  header h1 { flex: 1; margin: 0; }
+  header select { max-width: 220px; }
+  header a { font-size: 12px; color: var(--muted); }
+  textarea#input { width: 100%; height: 88px; resize: vertical; }
+  #docPreview { width: 100%; height: 70px; font-size: 11.5px; color: var(--muted); resize: vertical; display: none; margin-top: 4px; }
+  .bar { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+  .bar .grow { flex: 1; }
+  .msg { font-size: 12px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+  th, td { border-top: 1px solid var(--line); padding: 5px 4px; vertical-align: top; text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  td input, td select { width: 100%; padding: 3px 5px; font-size: 12.5px; }
+  td .stack { display: flex; flex-direction: column; gap: 3px; }
+  td .inline { display: flex; gap: 3px; }
+  td .inline > * { flex: 1; min-width: 0; }
+  tr.note td { border-top: none; padding-top: 0; }
+  tr.rowerr td { border-top: none; padding-top: 0; color: var(--err); }
+  .del { border: none; background: none; color: var(--muted); font-size: 16px; padding: 0 4px; }
+  .del:hover { color: var(--err); }
+  #jsonBox { width: 100%; height: 160px; font: 12px ui-monospace, Menlo, monospace; display: none; }
+  #result { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; font-size: 13px; }
+  #result ul { margin: 4px 0; padding-left: 18px; }
+  #result li { margin: 1px 0; }
+  .tag { font-size: 10.5px; border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; color: var(--muted); margin-right: 3px; }
+  .tag.todo { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .replacing { background: var(--warn-bg); color: var(--warn-fg); border-radius: 4px; padding: 4px 8px; font-size: 12.5px; margin-bottom: 6px; }
+  .hidden { display: none !important; }
+  td { position: relative; }
+  .colorbtn { display: inline-flex; align-items: center; gap: 5px; padding: 2px 6px; font-size: 12px; }
+  .colorbtn .swatch.big { width: 14px; height: 14px; margin: 0; }
+  .swatch.none { background: repeating-linear-gradient(45deg, transparent 0 3px, var(--line) 3px 5px) !important; }
+  .colorgrid { position: absolute; left: 4px; top: 100%; z-index: 10; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.18); width: 330px; }
+  .crow { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+  .clab { width: 30px; font-size: 11px; color: var(--muted); }
+  .ccell { flex: 1; height: 30px; border: 2px solid transparent; border-radius: 5px; padding: 0 2px; cursor: pointer; position: relative; overflow: hidden; }
+  .ccell:hover { border-color: var(--fg); }
+  .ccell.sel { border-color: var(--fg); box-shadow: inset 0 0 0 1px var(--bg); }
+  .cname { font-size: 9.5px; color: rgba(0,0,0,.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+  .cfoot { display: flex; gap: 6px; justify-content: space-between; margin-top: 6px; }
+  .cfoot button { font-size: 11.5px; padding: 3px 8px; }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 3px; border: 1px solid rgba(0,0,0,.15); }
+</style>
+</head>
+<body>
+<header>
+  <h1>cAIendar</h1>
+  <select id="calendar" title="일정을 등록할 캘린더"></select>
+  <select id="todoCalendar" class="hidden" title="할 일을 등록할 캘린더"></select>
+  <button id="refreshCals" type="button" title="캘린더 목록 새로 읽기">↻</button>
+  <a href="#" id="openHistory" title="이 확장으로 등록한 내역">기록</a>
+  <a href="#" id="openOptions">설정</a>
+</header>
+
+<div class="bar" style="margin:0 0 6px">
+  <span class="msg">입력 소스:</span>
+  <button id="tabBtn" type="button" title="지금 보고 있는 탭의 본문 텍스트를 첨부 (강의계획서, 학사일정, 공지 등)">현재 탭 본문</button>
+  <button id="pdfBtn" type="button" title="PDF 파일에서 텍스트를 추출해 첨부 (브라우저 안에서 처리, 업로드 없음)">PDF 파일</button>
+  <input type="file" id="pdfFile" accept="application/pdf,.pdf" class="hidden">
+  <span id="docInfo" class="msg grow"></span>
+  <button id="docClear" type="button" class="hidden" title="첨부 제거">×</button>
+</div>
+<textarea id="input" placeholder="예) 다음 주부터 매주 화·목 10:30에 75분 컴퓨터구조 수업, 306호. 12/18까지.&#10;10/7 밤 11:59 DB 과제 마감, 1시간 전 알림.&#10;문서를 첨부했다면 여기엔 지시만 (예: 수업만 뽑아줘, 과제 마감만) — 비워도 됨"></textarea>
+<div class="bar">
+  <button id="convertBtn" type="button" class="primary">변환</button>
+  <button id="jsonToggle" type="button">JSON</button>
+  <button id="clearBtn" type="button" title="입력·첨부·변환 결과를 모두 비웁니다">새로 쓰기</button>
+  <span id="convertMsg" class="msg grow"></span>
+</div>
+<textarea id="docPreview" readonly spellcheck="false"></textarea>
+<textarea id="jsonBox" spellcheck="false"></textarea>
+
+<div id="replaceBar" class="replacing hidden"></div>
+
+<section id="preview" class="hidden">
+  <table>
+    <thead><tr><th style="width:22%">제목</th><th style="width:32%">일시 / 마감</th><th style="width:24%">반복</th><th>장소</th><th style="width:28px"></th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="bar">
+    <label class="msg"><input type="checkbox" id="allowDup"> 같은 제목·같은 날 일정이 이미 있어도 등록</label>
+    <span class="grow"></span>
+    <span id="validMsg" class="msg"></span>
+    <button id="icsBtn" type="button" title="ICS 파일로 내려받아 구글 캘린더 등 어떤 서비스에든 '가져오기'">ICS 내려받기</button>
+    <button id="registerBtn" type="button" class="primary">등록</button>
+  </div>
+</section>
+
+<section id="result" class="hidden"></section>
+
+<script type="module" src="popup.js"></script>
+</body>
+</html>

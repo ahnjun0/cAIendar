@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "cAIendar — 자연어 일정 등록",
+  "version": "1.0.0",
+  "description": "네이버 캘린더에 자연어로 일정을 등록합니다. AI가 만든 일정을 확인한 뒤 CalDAV로 등록하고, 되돌릴 수 있습니다.",
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://caldav.calendar.naver.com/*"
+  ],
+  "optional_host_permissions": [
+    "https://calendar.naver.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://dashscope-intl.aliyuncs.com/*",
+    "https://openrouter.ai/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "cAIendar",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "src/options/options.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

@@ -1,0 +1,22 @@
+:root {
+  --fg: #1f2328; --muted: #6b7280; --bg: #ffffff; --line: #e5e7eb; --accent: #343fa6; --accent-fg: #fff;
+  --warn-bg: #fff7e6; --warn-fg: #8a5a00; --ok: #167364; --err: #b93b4f; --skip: #777d85;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --fg: #e6e6e6; --muted: #9aa0a6; --bg: #1e1f22; --line: #3a3b3f; --accent: #7fa9fd; --accent-fg: #101010;
+    --warn-bg: #3a2f14; --warn-fg: #f5d064; }
+}
+* { box-sizing: border-box; }
+body { font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; color: var(--fg); background: var(--bg); margin: 0; }
+h1 { font-size: 18px; margin: 0 0 16px; }
+h2 { font-size: 15px; margin: 0 0 8px; }
+input, select, textarea, button { font: inherit; color: inherit; }
+input[type=text], input[type=password], input[type=url], input[type=number], select, textarea {
+  background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px;
+}
+button { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:disabled { opacity: .5; cursor: default; }
+button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.ok { color: var(--ok); } .err { color: var(--err); } .skip { color: var(--skip); }
+.warn { background: var(--warn-bg); color: var(--warn-fg); border-radius: 4px; padding: 2px 6px; }

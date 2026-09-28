@@ -1,0 +1,35 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>cAIendar</title>
+<style>
+  html,body { margin:0; height:100%; overflow:hidden; }
+  body { display:flex; align-items:center; justify-content:center; gap:40px; padding:0 52px; box-sizing:border-box;
+    background: linear-gradient(140deg, #eef2ff 0%, #f7f9ff 45%, #e8f0fe 100%);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif; color:#1f2328;
+    word-break: keep-all; /* 한국어는 어절 단위로 줄바꿈 */ }
+  .copy { width: 340px; flex: 0 0 340px; }
+  .copy h1 { font-size: 42px; line-height:1.22; margin: 0 0 18px; letter-spacing:-1.2px; white-space: pre-line; }
+  .copy p { margin: 0 0 22px; color:#4b5563; font-size:19px; line-height:1.5; }
+  .copy ul { margin:0; padding:0; list-style:none; font-size:17px; color:#374151; }
+  .copy li { margin:10px 0; padding-left:22px; position:relative; line-height:1.45; }
+  .copy li::before { content:'·'; position:absolute; left:7px; color:#343fa6; font-weight:700; }
+  .shell { background:#fff; border-radius:16px; box-shadow: 0 24px 60px rgba(52,63,166,.22), 0 2px 8px rgba(0,0,0,.06);
+    overflow:hidden; flex:0 0 auto; }
+  .bar { height:34px; background:#f3f4f6; display:flex; align-items:center; gap:7px; padding:0 14px; border-bottom:1px solid #e5e7eb; }
+  .dot { width:11px; height:11px; border-radius:50%; background:#d1d5db; }
+  .clip { overflow:hidden; }
+  iframe { display:block; border:0; transform-origin: top left; }
+</style></head><body>
+<div class="copy"><h1 id="t"></h1><p id="s"></p><ul id="b"></ul></div>
+<div class="shell"><div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+<div class="clip" id="clip"><iframe id="f"></iframe></div></div>
+<script>
+  const q = new URLSearchParams(location.search);
+  document.getElementById('t').textContent = (q.get('title') || '').replace(/\\n/g, '\n');
+  document.getElementById('s').textContent = q.get('sub') || '';
+  document.getElementById('b').innerHTML = (q.get('bullets') || '').split('|').filter(Boolean).map((x) => `<li>${x}</li>`).join('');
+  const w = +(q.get('w') || 700), h = +(q.get('h') || 600), k = +(q.get('k') || 1.33);
+  const f = document.getElementById('f');
+  f.style.width = w + 'px'; f.style.height = h + 'px'; f.style.transform = `scale(${k})`;
+  const clip = document.getElementById('clip');
+  clip.style.width = Math.round(w * k) + 'px'; clip.style.height = Math.round(h * k) + 'px';
+  f.src = q.get('src');
+</script></body></html>

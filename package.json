@@ -1,0 +1,16 @@
+{
+  "name": "caiendar-ext",
+  "version": "1.0.0",
+  "private": true,
+  "description": "네이버 캘린더에 자연어로 일정을 등록하는 크롬 확장 (MV3)",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/",
+    "package": "./tools/package.sh"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ahnjun0/cAIendar.git"
+  }
+}
